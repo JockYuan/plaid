@@ -30,10 +30,12 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import java.util.Locale
 
+/**
+ * Test for [CreateShotUiModelUseCase] mocking all dependencies.
+ */
 class CreateShotUiModelUseCaseTest {
 
     private val mockHtmlParser: HtmlParser = mock()
@@ -43,20 +45,18 @@ class CreateShotUiModelUseCaseTest {
         on { locale } doReturn Locale.US
     }
 
-    private lateinit var createShotUiModel: CreateShotUiModelUseCase
-
-    @Before
-    fun setup() {
-        createShotUiModel =
-            CreateShotUiModelUseCase(mockHtmlParser, mockShotDecorator, provideFakeCoroutinesDispatcherProvider())
-
-        givenParsedHtml(testShot.description)
-    }
+    private val createShotUiModel =
+        CreateShotUiModelUseCase(mockHtmlParser, mockShotDecorator, provideFakeCoroutinesDispatcherProvider())
 
     @Test
     fun createModel_copiesFieldsFromShot() = runBlocking {
+        // Given that we have a shot with description
+        givenParsedHtml(testShot.description)
+
+        // When creating a shotUiModel out of it
         val result = createShotUiModel(testShot)
 
+        // Then all non-modified fields are properly mapped
         assertEquals(testShot.id, result.id)
         assertEquals(testShot.title, result.title)
         assertEquals(testShot.htmlUrl, result.url)
@@ -71,37 +71,60 @@ class CreateShotUiModelUseCaseTest {
 
     @Test
     fun createModel_formatsDescription() = runBlocking {
+        // Given that we have a shot with description
+        givenParsedHtml(testShot.description)
+
+        // When creating a shotUiModel out of it
         val result = createShotUiModel(testShot)
 
+        // Then the original description has been formatted and it is visible
         assertTrue(result.formattedDescription.isNotEmpty())
         assertFalse(result.shouldHideDescription)
     }
 
     @Test
     fun createModelWithoutDescription_hidesDescription() = runBlocking {
+        // Given that we have a shot without description
         val noDescriptionShot = testShot.copy(
             description = ""
         )
         givenParsedHtml(noDescriptionShot.description)
 
+        // When creating a shotUiModel out of it
         val result = createShotUiModel(noDescriptionShot)
 
+        // Then the description is not visible and it is empty
         assertTrue(result.formattedDescription.isEmpty())
         assertTrue(result.shouldHideDescription)
     }
 
     @Test
     fun createModel_formatsViewCount() = runBlocking {
+        // Given that we have a shot with description
+        givenParsedHtml(testShot.description)
+
+        // When creating a shotUiModel out of it
         val result = createShotUiModel(testShot)
+
+        // Then the views count has been properly formatted
         assertEquals("1,234", result.formattedViewsCount)
     }
 
     @Test
     fun createModel_formatsLikesCount() = runBlocking {
+        // Given that we have a shot with description
+        givenParsedHtml(testShot.description)
+
+        // When creating a shotUiModel out of it
         val result = createShotUiModel(testShot)
+
+        // Then the likes count has been properly formatted
         assertEquals("5,678", result.formattedLikesCount)
     }
 
+    /**
+     * Sets up the HtmlParser mock to return the length of the passed String object
+     */
     private fun givenParsedHtml(parsedString: String) {
         val mockSpannableStringBuilder: SpannableStringBuilder = mock {
             on { length } doReturn parsedString.length

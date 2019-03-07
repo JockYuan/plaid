@@ -26,6 +26,11 @@ import io.plaidapp.dribbble.R
 import javax.inject.Inject
 import io.plaidapp.core.R as coreR
 
+/**
+ * Decorator for a [ShotUiModel]
+ *  - locale is needed to format the views and likes count
+ *  - linkColors and highlightColor will define the colors used in the shot description
+ */
 class ShotDecorator @Inject constructor(context: Context) {
 
     @Suppress("DEPRECATION")
